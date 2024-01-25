@@ -5,5 +5,7 @@ import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
 
 public interface CreatorService {
 
-    Creator registerCreator(UserModel userModel);
+    Creator registerAsCreator(UserModel userModel);
+
+    Creator loginAsCreator(Long creatorId);
 }

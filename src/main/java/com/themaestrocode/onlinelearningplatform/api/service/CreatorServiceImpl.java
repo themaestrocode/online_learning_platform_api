@@ -1,7 +1,7 @@
 package com.themaestrocode.onlinelearningplatform.api.service;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Creator;
-import com.themaestrocode.onlinelearningplatform.api.security.Role;
+import com.themaestrocode.onlinelearningplatform.api.security.UserRole;
 import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.CreatorRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class CreatorServiceImpl implements CreatorService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Creator registerCreator(UserModel userModel) {
+    public Creator registerAsCreator(UserModel userModel) {
 
         Creator creator = new Creator();
         creator.setFirstName(userModel.getFirstName());
@@ -25,8 +25,15 @@ public class CreatorServiceImpl implements CreatorService {
         creator.setEmail(userModel.getEmail());
         creator.setPassword(passwordEncoder.encode(userModel.getPassword()));
         creator.setPhoneNo(userModel.getPhoneNo());
-        creator.setRole(Role.CREATOR);
+        creator.setUserRole(UserRole.CREATOR);
 
         return creatorRepo.save(creator);
+    }
+
+    @Override
+    public Creator loginAsCreator(Long creatorId) {
+        Creator creator = creatorRepo.findById(creatorId).get();
+
+        return creator;
     }
 }

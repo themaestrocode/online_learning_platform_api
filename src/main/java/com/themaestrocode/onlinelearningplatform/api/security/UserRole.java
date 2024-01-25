@@ -1,6 +1,6 @@
 package com.themaestrocode.onlinelearningplatform.api.security;
 
-public enum Role {
+public enum UserRole {
     STUDENT,
     CREATOR,
     ADMIN

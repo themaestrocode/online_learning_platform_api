@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/home")
+@RequestMapping("/api/v1")
 public class HomeController {
 
     @GetMapping
@@ -15,8 +15,4 @@ public class HomeController {
         return ResponseEntity.ok("Welcome to themaestrocode online leaning platform. Everything you wish to learn under your fingertips");
     }
 
-    @GetMapping("/register")
-    public ResponseEntity<String> registeration() {
-        return ResponseEntity.ok("Register as a student or creator");
-    }
 }

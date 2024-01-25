@@ -1,12 +1,14 @@
 package com.themaestrocode.onlinelearningplatform.api.service;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Student;
-import com.themaestrocode.onlinelearningplatform.api.security.Role;
 import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -17,7 +19,7 @@ public class StudentServiceImpl implements StudentService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Student registerStudent(UserModel userModel) {
+    public Student registerAsStudent(UserModel userModel) {
 
         Student student = new Student();
         student.setFirstName(userModel.getFirstName());
@@ -25,8 +27,21 @@ public class StudentServiceImpl implements StudentService {
         student.setEmail(userModel.getEmail());
         student.setPassword(passwordEncoder.encode(userModel.getPassword()));
         student.setPhoneNo(userModel.getPhoneNo());
-        student.setRole(Role.STUDENT);
 
         return studentRepo.save(student);
+    }
+
+    @Override
+    public Student loginAsStudent(Long studentId) {
+        Student student = studentRepo.findById(studentId).get();
+
+        return student;
+    }
+
+    @Override
+    public Student getStudentProfileById(Long studentId) {
+        Student student = studentRepo.findById(studentId).get();
+
+        return student;
     }
 }

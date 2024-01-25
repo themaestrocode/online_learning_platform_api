@@ -1,6 +1,6 @@
 package com.themaestrocode.onlinelearningplatform.api.entity;
 
-import com.themaestrocode.onlinelearningplatform.api.security.Role;
+import com.themaestrocode.onlinelearningplatform.api.security.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +32,8 @@ public class Student {
     private String recoveryEmail;
     @Column(name = "phone_no", length = 30)
     private String phoneNo;
-    @Column(name = "role", length = 10, nullable = false)
+    @Column(name = "user_role", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    private Role role = Role.STUDENT;
+    private UserRole userRole = UserRole.STUDENT;
     private boolean enabled = false;
 }

@@ -1,4 +1,4 @@
-package com.themaestrocode.onlinelearningplatform.api.entity;
+package com.themaestrocode.onlinelearningplatform.api.utility;
 
 import org.springframework.stereotype.Service;
 

@@ -1,6 +1,6 @@
 package com.themaestrocode.onlinelearningplatform.api.entity;
 
-import com.themaestrocode.onlinelearningplatform.api.enums.ContentType;
+import com.themaestrocode.onlinelearningplatform.api.utility.ContentType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

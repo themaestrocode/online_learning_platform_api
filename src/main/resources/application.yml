@@ -12,4 +12,15 @@ spring:
       ddl-auto: update
     show-sql: true
 
-
+  # Gmail SMTP configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: heysamsunga52@gmail.com
+    password: rooc fzan qwqy lqkk
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

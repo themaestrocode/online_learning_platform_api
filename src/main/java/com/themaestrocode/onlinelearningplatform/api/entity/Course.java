@@ -29,14 +29,14 @@ public class Course {
     @Column(name = "course_url")
     private String courseUrl;
     @ManyToOne
-    @JoinColumn(name = "creator_id", referencedColumnName = "creator_id")
-    private Creator creator;
+    @JoinColumn(name = "creator_id", referencedColumnName = "user_id")
+    private User creator;
     @Column(name = "course_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private CourseType courseType;
     @ManyToMany
     @JoinTable(name = "student_course_map",
                 joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
-                inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "student_id"))
-    private List<Student> students;
+                inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "user_id"))
+    private List<User> students;
 }

@@ -1,15 +1,27 @@
 package com.themaestrocode.onlinelearningplatform.api.controller;
 
+import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
+import com.themaestrocode.onlinelearningplatform.api.service.RegistrationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/register")
+@RequestMapping("/api/v1/registration")
 public class RegistrationController {
 
+    @Autowired
+    private RegistrationService registrationService;
 
-    @GetMapping
-    public ResponseEntity<String> registeration() {
-        return ResponseEntity.ok("Register as a student or creator");
+
+    @PostMapping("/student")
+    public ResponseEntity<String> registerAsStudent(@RequestBody UserModel userModel) {
+        return ResponseEntity.status(HttpStatus.OK).body(registrationService.registerAsStudent(userModel));
+    }
+
+    @PostMapping("/creator")
+    public ResponseEntity<String> registerAsCreator(@RequestBody UserModel userModel) {
+        return ResponseEntity.status(HttpStatus.OK).body(registrationService.registerAsCreator(userModel));
     }
 }

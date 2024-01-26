@@ -12,7 +12,7 @@ public class HomeController {
 
     @GetMapping
     public ResponseEntity<String> home() {
-        return ResponseEntity.ok("Welcome to themaestrocode online leaning platform. Everything you wish to learn under your fingertips");
+        return ResponseEntity.status(HttpStatus.OK).body("Welcome to themaestrocode online leaning platform. Everything you wish to learn under your fingertips");
     }
 
 }

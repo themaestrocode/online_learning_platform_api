@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: mySQLpassword2024
+    url: jdbc:mysql://localhost:3306/online-learning-platform-db
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  # Gmail SMTP configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: heysamsunga52@gmail.com
+    password: rooc fzan qwqy lqkk
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls:
+            enable: true

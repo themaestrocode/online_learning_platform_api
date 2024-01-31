@@ -1,43 +1,55 @@
 package com.themaestrocode.onlinelearningplatform.api.security;
 
+import com.themaestrocode.onlinelearningplatform.api.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Properties;
 
+import static com.themaestrocode.onlinelearningplatform.api.utility.UserRole.*;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(11);
-    }
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .authorizeRequests(authorizeRequests ->
-                                authorizeRequests
-                                        .requestMatchers("/api/v1/**"/*, "/api/v1/registration/**", "/api/v1/courses/**"*/).permitAll()
-//                                .requestMatchers("/api/v1/student/profile/**", "/api/v1/student/courses").hasRole(UserRole.STUDENT.toString())
-//                                .requestMatchers("/api/v1/creator/profile/**", "/api/v1/creator/courses").hasRole(UserRole.CREATOR.toString())
-//                                .requestMatchers("/admin/api/**").hasRole(UserRole.ADMIN.toString())
-//                                .requestMatchers("/admin/api/v1/admin/dashboard").authenticated
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers("/api/v1/**").permitAll()
+//                        .requestMatchers("/api/v1/user/student/**").hasRole(STUDENT.name())
+//                        .requestMatchers("/api/v1/user/creator/**").hasRole(CREATOR.name())
                         //.anyRequest().authenticated()
-                );
-        //.formLogin(Customizer.withDefaults());
-
+                )
+                .httpBasic(Customizer.withDefaults());
+                //.formLogin(Customizer.withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(userService);
+
+        return provider;
     }
 
     @Bean
@@ -57,4 +69,5 @@ public class WebSecurityConfig {
 
         return mailSender;
     }
+
 }

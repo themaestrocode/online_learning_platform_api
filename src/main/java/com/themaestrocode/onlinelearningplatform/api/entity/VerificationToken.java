@@ -27,7 +27,7 @@ public class VerificationToken {
     private LocalDateTime expiryTime;
     @Column(name = "confirmation_time")
     private LocalDateTime confirmationTime;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

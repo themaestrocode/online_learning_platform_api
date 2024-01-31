@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findByUserEmail(String email);
+    User findByEmail(String email);
 
 
     @Transactional

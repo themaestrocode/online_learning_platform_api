@@ -12,6 +12,13 @@ spring:
     hibernate:
       ddl-auto: update
 
+  #file upload properties
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
   # Gmail SMTP configuration
   mail:
     host: smtp.gmail.com

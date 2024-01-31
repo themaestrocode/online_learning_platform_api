@@ -5,8 +5,11 @@ import com.themaestrocode.onlinelearningplatform.api.entity.User;
 import com.themaestrocode.onlinelearningplatform.api.entity.VerificationToken;
 import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.UserRepository;
-import com.themaestrocode.onlinelearningplatform.api.security.UserRole;
+import com.themaestrocode.onlinelearningplatform.api.utility.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +21,7 @@ import java.util.regex.Pattern;
 
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
@@ -30,6 +33,15 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserDetails userDetails = userRepository.findByEmail(email);
+
+        if(userDetails == null) throw new UsernameNotFoundException(String.format("user with the provided email: '%s' does not exist!", email));
+
+        return userRepository.findByEmail(email);
+    }
 
     @Override
     public User registerStudent(UserModel userModel) {
@@ -48,8 +60,8 @@ public class UserServiceImpl implements UserService{
         User user = new User();
         user.setFirstName(userModel.getFirstName());
         user.setLastName(userModel.getLastName());
-        user.setUserEmail(userModel.getUserEmail());
-        user.setUserPassword(passwordEncoder.encode(userModel.getUserPassword()));
+        user.setEmail(userModel.getUserEmail());
+        user.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
         user.setPhoneNo(userModel.getPhoneNo());
         user.setUserRole(UserRole.STUDENT);
 
@@ -73,8 +85,8 @@ public class UserServiceImpl implements UserService{
         User user = new User();
         user.setFirstName(userModel.getFirstName());
         user.setLastName(userModel.getLastName());
-        user.setUserEmail(userModel.getUserEmail());
-        user.setUserPassword(passwordEncoder.encode(userModel.getUserPassword()));
+        user.setEmail(userModel.getUserEmail());
+        user.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
         user.setPhoneNo(userModel.getPhoneNo());
         user.setUserRole(UserRole.CREATOR);
 
@@ -82,8 +94,8 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User findByUserEmail(String email) {
-        return userRepository.findByUserEmail(email);
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
@@ -96,12 +108,11 @@ public class UserServiceImpl implements UserService{
         } else if(verificationToken.getConfirmationTime() != null) {
             return "You have already confirmed your registration.";
         } else if(verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            //verificationTokenService.deleteVerificationToken(verificationToken);
             return "Verification token expired! Please, register again and be sure to verify your account within 30 minutes.";
         }
 
         verificationTokenService.updateVerificationTokenConfirmationTime(token, LocalDateTime.now());
-        userRepository.enableUser(verificationToken.getUser().getUserEmail());
+        userRepository.enableUser(verificationToken.getUser().getEmail());
 
         return "You have successfully verified your account";
     }
@@ -126,7 +137,7 @@ public class UserServiceImpl implements UserService{
     }
 
     private boolean checkIfEmailExists(String email) {
-        User user = findByUserEmail(email);
+        User user = findByEmail(email);
 
         if(user == null) return false;
 

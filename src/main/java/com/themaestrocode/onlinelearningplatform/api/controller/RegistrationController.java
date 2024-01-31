@@ -1,7 +1,5 @@
 package com.themaestrocode.onlinelearningplatform.api.controller;
 
-
-
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
 import com.themaestrocode.onlinelearningplatform.api.entity.VerificationToken;
 import com.themaestrocode.onlinelearningplatform.api.event.RegistrationCompleteEvent;
@@ -20,6 +18,12 @@ public class RegistrationController {
     private UserService userService;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+
+    @GetMapping
+    public String registration() {
+        return "Register as a student or creator";
+    }
 
     @PostMapping("/student")
     public String registerStudent(@RequestBody UserModel userModel, final HttpServletRequest request) {

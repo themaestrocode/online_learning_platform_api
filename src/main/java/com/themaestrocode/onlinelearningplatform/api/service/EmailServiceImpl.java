@@ -14,11 +14,11 @@ public class EmailServiceImpl implements EmailService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailServiceImpl.class);
     @Autowired
-    private JavaMailSender javaMailSender;
+    private JavaMailSender mailSender;
 
     @Override
     public void sendEmail(String userEmail, String message) throws MessagingException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
         helper.setFrom("heysamsungA52@gmail.com");
@@ -26,6 +26,7 @@ public class EmailServiceImpl implements EmailService {
         helper.setSubject("Confirm your email");
         helper.setText(message, true);
 
-        javaMailSender.send(mimeMessage);
+        mailSender.send(mimeMessage);
     }
+
 }

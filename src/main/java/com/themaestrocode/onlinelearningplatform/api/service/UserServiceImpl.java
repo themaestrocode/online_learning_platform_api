@@ -57,15 +57,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if(isValidPassword < 0) throw new IllegalStateException("password too short! Password must not be less than 8 characters.");
         else if(isValidPassword == 0) throw new IllegalStateException(String.format("passwords do not match!"));
 
-        User user = new User();
-        user.setFirstName(userModel.getFirstName());
-        user.setLastName(userModel.getLastName());
-        user.setEmail(userModel.getUserEmail());
-        user.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
-        user.setPhoneNo(userModel.getPhoneNo());
-        user.setUserRole(UserRole.STUDENT);
+        User student = new User();
+        student.setFirstName(userModel.getFirstName());
+        student.setLastName(userModel.getLastName());
+        student.setEmail(userModel.getUserEmail());
+        student.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
+        student.setPhoneNo(userModel.getPhoneNo());
+        student.setUserRole(UserRole.STUDENT);
 
-        return userRepository.save(user);
+        return userRepository.save(student);
     }
 
     @Override
@@ -82,15 +82,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if(isValidPassword < 0) throw new IllegalStateException("password too short! Password must not be less than 8 characters.");
         else if(isValidPassword == 0) throw new IllegalStateException(String.format("passwords do not match!"));
 
-        User user = new User();
-        user.setFirstName(userModel.getFirstName());
-        user.setLastName(userModel.getLastName());
-        user.setEmail(userModel.getUserEmail());
-        user.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
-        user.setPhoneNo(userModel.getPhoneNo());
-        user.setUserRole(UserRole.CREATOR);
+        User creator = new User();
+        creator.setFirstName(userModel.getFirstName());
+        creator.setLastName(userModel.getLastName());
+        creator.setEmail(userModel.getUserEmail());
+        creator.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
+        creator.setPhoneNo(userModel.getPhoneNo());
+        creator.setUserRole(UserRole.CREATOR);
 
-        return userRepository.save(user);
+        return userRepository.save(creator);
     }
 
     @Override

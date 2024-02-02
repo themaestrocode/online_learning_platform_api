@@ -32,9 +32,9 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/v1/**").permitAll()
-//                        .requestMatchers("/api/v1/user/student/**").hasRole(STUDENT.name())
-//                        .requestMatchers("/api/v1/user/creator/**").hasRole(CREATOR.name())
-                        //.anyRequest().authenticated()
+//                        .requestMatchers("/api/v1/student/**").hasRole(STUDENT.name())
+//                        .requestMatchers("/api/v1/creator/**").hasRole(CREATOR.name())
+//                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
                 //.formLogin(Customizer.withDefaults());

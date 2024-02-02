@@ -1,6 +1,7 @@
 package com.themaestrocode.onlinelearningplatform.api.repository;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
+import com.themaestrocode.onlinelearningplatform.api.utility.CourseType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     void deleteByCourseIdAndCreatorUserId(Long courseId, Long creatorId);
 
     List<Course> findByCreatorUserId(Long creatorId);
+
+    List<Course> findByCourseType(CourseType courseType);
 }

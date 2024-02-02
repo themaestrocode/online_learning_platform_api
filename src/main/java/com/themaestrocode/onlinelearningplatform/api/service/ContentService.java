@@ -8,7 +8,7 @@ import java.util.List;
 public interface ContentService {
 
 
-    Content saveContent(ContentModel contentModel);
+    Content addCourseContent(ContentModel contentModel);
 
-    List<Content> fetchAllContentsUnderACourse(Long courseId);
+    List<Content> fetchAllContentUnderACourse(Long courseId);
 }

@@ -29,8 +29,10 @@ public class CreatorController {
 
 
     @GetMapping
-    public String viewProfile() {
-        return "Welcome to your profile";
+    public String viewProfile(HttpServletRequest request) {
+        User creator = detectCreator(request);
+
+        return String.format("Welcome to your profile, %s", creator.getFirstName() + " " + creator.getLastName());
     }
 
     @PostMapping("/courses")
@@ -43,58 +45,64 @@ public class CreatorController {
     }
 
     @GetMapping("/courses")
-    public List<Course> fetchAllCourses(HttpServletRequest request) {
+    public List<Course> fetchAllCreatorCourses(HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchAllCourses(creator.getUserId());
+        return courseService.fetchAllCreatorCourses(creator.getUserId());
     }
 
     @GetMapping("/courses/course-name/{courseName}")
-    public List<Course> fetchCourseByTitle(@PathVariable("courseName") String courseName, HttpServletRequest request) {
+    public List<Course> fetchCreatorCourseByTitle(@PathVariable("courseName") String courseName, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchCourseByTitle(courseName, creator.getUserId());
+        return courseService.fetchCreatorCourseByTitle(courseName, creator.getUserId());
     }
 
     @GetMapping("/courses/{courseId}")
-    public Course fetchCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+    public Course fetchCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchCourseById(courseId, creator.getUserId());
+        return courseService.fetchCreatorCourseById(courseId, creator.getUserId());
     }
 
     @DeleteMapping("/courses/{courseId}")
-    public String deleteCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+    public String deleteCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         User creator = detectCreator(request);
-        courseService.deleteCourseById(courseId, creator.getUserId());
+        courseService.deleteCreatorCourseById(courseId, creator.getUserId());
 
         return "Course successfully deleted!";
     }
 
     @PutMapping("/courses/{courseId}")
-    public Course updateCourse(@PathVariable("courseId") Long courseId, @RequestBody CourseModel courseModel,HttpServletRequest request) {
+    public Course updateCreatorCourse(@PathVariable("courseId") Long courseId, @RequestBody CourseModel courseModel, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        Course course = courseService.updateCourse(courseId, courseModel, creator.getUserId());
+        Course course = courseService.updateCreatorCourse(courseId, courseModel, creator.getUserId());
 
         return course;
     }
 
     @PostMapping("/courses/contents")
-    public Content addContent (@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
-                               @RequestParam("description") String description,
-                               @RequestParam("courseId") Long courseId) throws IOException {
+    public Content addCourseContent(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
+                                    @RequestParam("description") String description,
+                                    @RequestParam("courseId") Long courseId, HttpServletRequest request) throws IOException {
 
-        Course course = courseService.fetchCourseById(courseId);
+        User creator = detectCreator(request);
+
+        Course course = courseService.fetchCreatorCourseById(courseId, creator.getUserId());
 
         ContentModel contentModel = new ContentModel(name, file.getBytes(), description, course);
 
-        return contentService.saveContent(contentModel);
+        return contentService.addCourseContent(contentModel);
     }
 
     @GetMapping("/courses/{courseId}/contents")
-    public List<Content> fetchAllContentsUnderACourse(@PathVariable("courseId") Long courseId) {
-        return contentService.fetchAllContentsUnderACourse(courseId);
+    public List<Content> fetchAllContentUnderACourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+        User creator = detectCreator(request);
+
+        Course course = courseService.fetchCreatorCourseById(courseId, creator.getUserId());
+
+        return contentService.fetchAllContentUnderACourse(courseId);
     }
 
     private User detectCreator(HttpServletRequest request) {

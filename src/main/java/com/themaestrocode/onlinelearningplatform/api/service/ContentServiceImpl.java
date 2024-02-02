@@ -17,7 +17,7 @@ public class ContentServiceImpl implements ContentService {
     private ContentRepository contentRepository;
 
     @Override
-    public Content saveContent(ContentModel contentModel) {
+    public Content addCourseContent(ContentModel contentModel) {
         Content content = new Content();
 
         content.setName(contentModel.getName());
@@ -29,7 +29,7 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public List<Content> fetchAllContentsUnderACourse(Long courseId) {
+    public List<Content> fetchAllContentUnderACourse(Long courseId) {
         return contentRepository.findByCourseCourseId(courseId);
     }
 }

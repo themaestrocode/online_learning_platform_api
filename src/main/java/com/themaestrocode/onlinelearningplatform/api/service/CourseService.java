@@ -10,15 +10,21 @@ public interface CourseService {
 
     Course createCourse(CourseModel courseModel, User creator);
 
-    List<Course> fetchAllCourses(Long creatorId);
+    List<Course> fetchAllCreatorCourses(Long creatorId);
 
-    List<Course> fetchCourseByTitle(String courseName, Long creatorId);
+    List<Course> fetchCreatorCourseByTitle(String courseName, Long creatorId);
 
-    Course fetchCourseById(Long courseId, Long creatorId);
+    Course fetchCreatorCourseById(Long courseId, Long creatorId);
 
-    void deleteCourseById(Long courseId, Long creatorId);
+    void deleteCreatorCourseById(Long courseId, Long creatorId);
 
-    Course updateCourse(Long courseId, CourseModel courseModel, Long creatorId);
+    Course updateCreatorCourse(Long courseId, CourseModel courseModel, Long creatorId);
+
+    List<Course> fetchAllCourses();
+
+    List<Course> fetchFreeCourses();
+
+    List<Course> fetchPaidCourses();
 
     Course fetchCourseById(Long courseId);
 }

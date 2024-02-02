@@ -4,6 +4,7 @@ import com.themaestrocode.onlinelearningplatform.api.entity.Course;
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
 import com.themaestrocode.onlinelearningplatform.api.model.CourseModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.CourseRepository;
+import com.themaestrocode.onlinelearningplatform.api.utility.CourseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +33,13 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
-    public List<Course> fetchAllCourses(Long creatorId) {
+    public List<Course> fetchAllCreatorCourses(Long creatorId) {
         //return courseRepository.fetchAllCreatorCourses(creatorId);
         return courseRepository.findByCreatorUserId(creatorId);
     }
 
     @Override
-    public List<Course> fetchCourseByTitle(String courseName, Long creatorId) {
+    public List<Course> fetchCreatorCourseByTitle(String courseName, Long creatorId) {
         //List<Course> creatorCourses = courseRepository.fetchAllCreatorCourses(creatorId);
         List<Course> creatorCourses = courseRepository.findByCreatorUserId(creatorId);
         List<Course> coursesContainingCourseName = new ArrayList<>();
@@ -53,20 +54,28 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
-    public Course fetchCourseById(Long courseId, Long creatorId) {
-        return courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
+    public Course fetchCreatorCourseById(Long courseId, Long creatorId) {
+        Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
+
+        if(course == null) throw new NullPointerException("you do not have a course with the provided course id.");
+
+        return course;
         //return courseRepository.fetchCreatorCourseById(courseId, creatorId);
     }
 
     @Override
     @Transactional
-    public void deleteCourseById(Long courseId, Long creatorId) {
+    public void deleteCreatorCourseById(Long courseId, Long creatorId) {
+
+        if(courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId) == null) {
+            throw new NullPointerException("course does not exist!");
+        }
         courseRepository.deleteByCourseIdAndCreatorUserId(courseId, creatorId);
         //courseRepository.deleteCreatorCourseById(courseId, creatorId);
     }
 
     @Override
-    public Course updateCourse(Long courseId, CourseModel courseModel, Long creatorId) {
+    public Course updateCreatorCourse(Long courseId, CourseModel courseModel, Long creatorId) {
         Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
         //Course course = courseRepository.fetchCreatorCourseById(courseId, creatorId);
 
@@ -90,7 +99,26 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
+    public List<Course> fetchAllCourses() {
+        return courseRepository.findAll();
+    }
+
+    @Override
+    public List<Course> fetchFreeCourses() {
+        return courseRepository.findByCourseType(CourseType.FREE);
+    }
+
+    @Override
+    public List<Course> fetchPaidCourses() {
+        return courseRepository.findByCourseType(CourseType.PAID);
+    }
+
+    @Override
     public Course fetchCourseById(Long courseId) {
-        return courseRepository.findById(courseId).get();
+        Course course = courseRepository.findById(courseId).get();
+
+        if(course == null) throw new NullPointerException("course does not exist!");
+
+        return course;
     }
 }

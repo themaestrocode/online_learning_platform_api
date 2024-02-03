@@ -2,7 +2,7 @@ package com.themaestrocode.onlinelearningplatform.api.utility;
 
 public enum UserRole {
 
-    STUDENT,
-    CREATOR,
-    ADMIN
+    ROLE_STUDENT,
+    ROLE_CREATOR,
+    ROLE_ADMIN
 }

@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         student.setEmail(userModel.getUserEmail());
         student.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
         student.setPhoneNo(userModel.getPhoneNo());
-        student.setUserRole(UserRole.STUDENT);
+        student.setUserRole(UserRole.ROLE_STUDENT);
 
         return userRepository.save(student);
     }
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         creator.setEmail(userModel.getUserEmail());
         creator.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
         creator.setPhoneNo(userModel.getPhoneNo());
-        creator.setUserRole(UserRole.CREATOR);
+        creator.setUserRole(UserRole.ROLE_CREATOR);
 
         return userRepository.save(creator);
     }

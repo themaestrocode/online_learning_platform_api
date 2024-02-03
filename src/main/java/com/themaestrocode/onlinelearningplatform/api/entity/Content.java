@@ -20,8 +20,8 @@ public class Content {
     private Long contentId;
     @Column(name = "name")
     private String name;
-    @Column(name = "file_data")
     @Lob
+    @Column(name = "file_data", columnDefinition = "MEDIUMBLOB")
     private byte[] fileData;
     @Column(name = "description")
     private String description;

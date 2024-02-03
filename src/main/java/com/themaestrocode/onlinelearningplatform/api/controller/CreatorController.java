@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/creator")
+@RequestMapping("/creator/api/v1")
 public class CreatorController {
 
     @Autowired

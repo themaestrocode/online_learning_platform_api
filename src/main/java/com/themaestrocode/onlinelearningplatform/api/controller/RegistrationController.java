@@ -8,6 +8,7 @@ import com.themaestrocode.onlinelearningplatform.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +22,8 @@ public class RegistrationController {
 
 
     @GetMapping
-    public String registration() {
-        return "Register as a student or creator";
+    public ResponseEntity<String> registration() {
+        return ResponseEntity.ok("Register as a student or creator");
     }
 
     @PostMapping("/student")

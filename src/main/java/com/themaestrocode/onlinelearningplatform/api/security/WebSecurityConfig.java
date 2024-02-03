@@ -1,19 +1,14 @@
 package com.themaestrocode.onlinelearningplatform.api.security;
 
-import com.themaestrocode.onlinelearningplatform.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.Properties;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static com.themaestrocode.onlinelearningplatform.api.utility.UserRole.*;
 
@@ -22,9 +17,10 @@ import static com.themaestrocode.onlinelearningplatform.api.utility.UserRole.*;
 public class WebSecurityConfig {
 
     @Autowired
-    private UserService userService;
+    private AuthenticationProvider authenticationProvider;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,42 +28,18 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/v1/**").permitAll()
-//                        .requestMatchers("/api/v1/student/**").hasRole(STUDENT.name())
-//                        .requestMatchers("/api/v1/creator/**").hasRole(CREATOR.name())
-//                        .anyRequest().authenticated()
+                        .requestMatchers("/student/api/v1/**").hasAuthority(ROLE_STUDENT.name())
+                        .requestMatchers("/creator/api/v1/**").hasAuthority(ROLE_CREATOR.name())
+                        .requestMatchers("/admin/api/v1/**").hasAuthority(ROLE_ADMIN.name())
+                        .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults());
-                //.formLogin(Customizer.withDefaults());
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-
-        provider.setPasswordEncoder(passwordEncoder);
-        provider.setUserDetailsService(userService);
-
-        return provider;
-    }
-
-    @Bean
-    public JavaMailSender javaMailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-
-        mailSender.setUsername("heysamsunga52@gmail.com");
-        mailSender.setPassword("rooc fzan qwqy lqkk");
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
-
-        return mailSender;
     }
 
 }

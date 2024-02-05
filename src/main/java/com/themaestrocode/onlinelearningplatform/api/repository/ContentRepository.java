@@ -10,4 +10,6 @@ import java.util.List;
 public interface ContentRepository extends JpaRepository<Content, Long> {
 
     List<Content> findByCourseCourseId(Long courseId);
+
+    Content findByContentIdAndCourseCourseId(Long contentId, Long courseId);
 }

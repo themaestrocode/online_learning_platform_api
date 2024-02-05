@@ -32,4 +32,18 @@ public class ContentServiceImpl implements ContentService {
     public List<Content> fetchAllContentUnderACourse(Long courseId) {
         return contentRepository.findByCourseCourseId(courseId);
     }
+
+    @Override
+    public Content fetchContent(Long contentId, Long courseId) {
+        Content content = contentRepository.findByContentIdAndCourseCourseId(contentId, courseId);
+
+        if(content == null) throw new NullPointerException("Content does not exist");
+
+        return content;
+    }
+
+    @Override
+    public void deleteContentById(Long contentId) {
+        contentRepository.deleteById(contentId);
+    }
 }

@@ -24,7 +24,7 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         verificationTokenService.saveVerificationToken(verificationToken);
 
         //build the link/url for email verification
-        String verificationLink = event.getApplicationUrl() + "/registration/verifyregistration?token=" + verificationToken.getToken();
+        String verificationLink = event.getApplicationUrl() + "/registration/verify-registration?token=" + verificationToken.getToken();
         String userName = user.getFirstName() + " " + user.getLastName();
         String message = String.format("Hi, %s!\n\nClick the link below to verify your email and activate your account. " +
                 "Kindly note that this link will expire in 30 minutes.\n%s", userName, verificationLink);

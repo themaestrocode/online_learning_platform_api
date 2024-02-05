@@ -12,5 +12,10 @@ public interface EnrollmentService {
 
     Course fetchEnrolledCourse(Long courseId, Long studentId);
 
-    List<Course> fetchAllEnrollmentsByStudent(Long studentId);
+    List<Course> fetchCoursesEnrolledForByStudent(Long studentId);
+
+    Enrollment fetchEnrollmentByCourseIdAndStudentId(Long courseId, Long userId);
+
+
+    void cancelEnrollment(Long enrollmentId);
 }

@@ -11,4 +11,8 @@ public interface ContentService {
     Content addCourseContent(ContentModel contentModel);
 
     List<Content> fetchAllContentUnderACourse(Long courseId);
+
+    Content fetchContent(Long contentId, Long courseId);
+
+    void deleteContentById(Long contentId);
 }

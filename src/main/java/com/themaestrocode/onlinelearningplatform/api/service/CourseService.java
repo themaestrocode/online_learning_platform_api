@@ -14,7 +14,7 @@ public interface CourseService {
 
     List<Course> fetchCreatorCourseByTitle(String courseName, Long creatorId);
 
-    Course fetchCreatorCourseById(Long courseId, Long creatorId);
+    Course fetchCreatorCourse(Long courseId, Long creatorId);
 
     void deleteCreatorCourseById(Long courseId, Long creatorId);
 

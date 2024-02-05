@@ -10,14 +10,16 @@ import com.themaestrocode.onlinelearningplatform.api.service.CourseService;
 import com.themaestrocode.onlinelearningplatform.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/creator/api/v1")
+@RequestMapping("/api/v1/creator")
 public class CreatorController {
 
     @Autowired
@@ -29,81 +31,102 @@ public class CreatorController {
 
 
     @GetMapping
-    public String viewProfile(HttpServletRequest request) {
+    public ResponseEntity<String> viewProfile(HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return String.format("Welcome to your profile, %s", creator.getFirstName() + " " + creator.getLastName());
+        return ResponseEntity.ok(String.format("Welcome to your profile, %s %s", creator.getFirstName(), creator.getLastName()));
     }
 
     @PostMapping("/courses")
-    public String createCourse(@RequestBody CourseModel courseModel, HttpServletRequest request) {
+    public ResponseEntity<Course> createCourse(@RequestBody CourseModel courseModel, HttpServletRequest request) {
         User creator = detectCreator(request);
 
         Course course = courseService.createCourse(courseModel, creator);
 
-        return "Course successfully added!";
+        return ResponseEntity.created(URI.create("/api/v1/creator/" + course.getCourseId())).body((course));
     }
 
     @GetMapping("/courses")
-    public List<Course> fetchAllCreatorCourses(HttpServletRequest request) {
+    public ResponseEntity<List<Course>> fetchAllCreatorCourses(HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchAllCreatorCourses(creator.getUserId());
+        return ResponseEntity.ok(courseService.fetchAllCreatorCourses(creator.getUserId()));
     }
 
     @GetMapping("/courses/course-name/{courseName}")
-    public List<Course> fetchCreatorCourseByTitle(@PathVariable("courseName") String courseName, HttpServletRequest request) {
+    public ResponseEntity<List<Course>> fetchCreatorCourseByTitle(@PathVariable("courseName") String courseName, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchCreatorCourseByTitle(courseName, creator.getUserId());
+        return ResponseEntity.ok(courseService.fetchCreatorCourseByTitle(courseName, creator.getUserId()));
     }
 
     @GetMapping("/courses/{courseId}")
-    public Course fetchCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+    public ResponseEntity<Course> fetchCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        return courseService.fetchCreatorCourseById(courseId, creator.getUserId());
+        return ResponseEntity.ok(courseService.fetchCreatorCourse(courseId, creator.getUserId()));
     }
 
     @DeleteMapping("/courses/{courseId}")
-    public String deleteCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+    public ResponseEntity<String> deleteCreatorCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         User creator = detectCreator(request);
         courseService.deleteCreatorCourseById(courseId, creator.getUserId());
 
-        return "Course successfully deleted!";
+        return ResponseEntity.ok("Course successfully deleted!");
     }
 
     @PutMapping("/courses/{courseId}")
-    public Course updateCreatorCourse(@PathVariable("courseId") Long courseId, @RequestBody CourseModel courseModel, HttpServletRequest request) {
+    public ResponseEntity<Course> updateCreatorCourse(@PathVariable("courseId") Long courseId, @RequestBody CourseModel courseModel, HttpServletRequest request) {
         User creator = detectCreator(request);
 
         Course course = courseService.updateCreatorCourse(courseId, courseModel, creator.getUserId());
 
-        return course;
+        return ResponseEntity.ok(course);
     }
 
-    @PostMapping("/courses/contents")
-    public Content addCourseContent(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
+    @PostMapping("/courses/{courseId}/contents")
+    public ResponseEntity<Content> addCourseContent(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
                                     @RequestParam("description") String description,
-                                    @RequestParam("courseId") Long courseId, HttpServletRequest request) throws IOException {
+                                    @PathVariable("courseId") Long courseId, HttpServletRequest request) throws IOException {
 
         User creator = detectCreator(request);
 
-        Course course = courseService.fetchCreatorCourseById(courseId, creator.getUserId());
+        Course course = courseService.fetchCreatorCourse(courseId, creator.getUserId());
 
         ContentModel contentModel = new ContentModel(name, file.getBytes(), description, course);
+        Content content = contentService.addCourseContent(contentModel);
 
-        return contentService.addCourseContent(contentModel);
+        String uri = String.format("/api/v1/courses/%d/contents/%d", courseId, content.getContentId());
+
+        return ResponseEntity.created(URI.create(uri)).body(content);
     }
 
     @GetMapping("/courses/{courseId}/contents")
-    public List<Content> fetchAllContentUnderACourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+    public ResponseEntity<List<Content>> fetchAllContentUnderACourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         User creator = detectCreator(request);
 
-        Course course = courseService.fetchCreatorCourseById(courseId, creator.getUserId());
+        Course course = courseService.fetchCreatorCourse(courseId, creator.getUserId());
 
-        return contentService.fetchAllContentUnderACourse(courseId);
+        return ResponseEntity.ok(contentService.fetchAllContentUnderACourse(courseId));
     }
+
+    @DeleteMapping("/courses/{courseId}/contents/{contentId}")
+    public ResponseEntity<String> deleteContent(@PathVariable("courseId") Long courseId, @PathVariable("contentId") Long contentId) {
+        Content content = contentService.fetchContent(contentId, courseId);
+
+        contentService.deleteContentById(content.getContentId());
+
+        return ResponseEntity.ok("Content successfully deleted");
+    }
+
+//    @GetMapping("/courses/{courseId}/enrolled-students")
+//    public List<User> fetchStudentsEnrolledForACourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+//        User creator = detectCreator(request);
+//
+//        Course course = courseService.fetchCreatorCourse(courseId, creator.getUserId());
+//
+//        return
+//    }
 
     private User detectCreator(HttpServletRequest request) {
         String creatorEmail = request.getUserPrincipal().getName();

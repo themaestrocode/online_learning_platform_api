@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 @Service
 public class CourseServiceImpl implements CourseService{
@@ -54,7 +54,7 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
-    public Course fetchCreatorCourseById(Long courseId, Long creatorId) {
+    public Course fetchCreatorCourse(Long courseId, Long creatorId) {
         Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
 
         if(course == null) throw new NullPointerException("you do not have a course with the provided course id.");
@@ -117,7 +117,7 @@ public class CourseServiceImpl implements CourseService{
     public Course fetchCourseById(Long courseId) {
         Course course = courseRepository.findById(courseId).get();
 
-        if(course == null) throw new NullPointerException("course does not exist!");
+        if(course == null) throw new NoSuchElementException("course does not exist!");
 
         return course;
     }

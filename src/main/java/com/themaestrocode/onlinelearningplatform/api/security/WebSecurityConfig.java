@@ -27,10 +27,9 @@ public class WebSecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/api/v1/**").permitAll()
-                        .requestMatchers("/student/api/v1/**").hasAuthority(ROLE_STUDENT.name())
-                        .requestMatchers("/creator/api/v1/**").hasAuthority(ROLE_CREATOR.name())
-                        .requestMatchers("/admin/api/v1/**").hasAuthority(ROLE_ADMIN.name())
+                        .requestMatchers("/api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/student/**").hasAuthority(ROLE_STUDENT.name())
+                        .requestMatchers("/api/v1/creator/**").hasAuthority(ROLE_CREATOR.name())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement()

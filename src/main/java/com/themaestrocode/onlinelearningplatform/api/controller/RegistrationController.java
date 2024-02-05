@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/registration")
+@RequestMapping("/api/v1/public/registration")
 public class RegistrationController {
 
     @Autowired
@@ -45,12 +45,12 @@ public class RegistrationController {
         return String.format("Welcome, %s! Check your email to verify your account.", user.getFirstName() + " " + user.getLastName());
     }
 
-    @GetMapping("/verifyregistration")
+    @GetMapping("/verify-registration")
     public String confirmRegistration(@RequestParam("token") String token) {
         return userService.confirmRegistration(token);
     }
 
-    @GetMapping("/regeneratetoken")
+    @GetMapping("/regenerate-token")
     public String regenerateVerificationToken(@RequestParam("token") String oldToken, HttpServletRequest request) {
         VerificationToken verificationToken = userService.generateNewVerificationToken(oldToken);
 
@@ -61,7 +61,7 @@ public class RegistrationController {
     }
 
     private void resendVerificationTokenMail(User user, String applicationUrl, VerificationToken verificationToken) {
-        String verificationLink = String.format("%s/registration/verifyregistration?token=%s", applicationUrl, verificationToken.getToken());
+        String verificationLink = String.format("%s/registration/verify-registration?token=%s", applicationUrl, verificationToken.getToken());
         String userName = user.getFirstName() + " " + user.getLastName();
         String message = String.format("Hi, %s!\n\nClick the link below to verify your email and activate your account. " +
                 "Kindly note that this link will expire in 30 minutes.\n%s", userName, verificationLink);
@@ -75,7 +75,7 @@ public class RegistrationController {
     }
 
     private String applicationUrl(HttpServletRequest request) {
-        return String.format("http://%s:%d/api/v1%s", request.getServerName(), request.getServerPort(), request.getContextPath());
+        return String.format("http://%s:%d/api/v1/public%s", request.getServerName(), request.getServerPort(), request.getContextPath());
     }
 
 

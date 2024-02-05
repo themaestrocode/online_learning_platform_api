@@ -8,8 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -36,9 +34,9 @@ public class Course {
     @Column(name = "course_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private CourseType courseType;
-    @ManyToMany
-    @JoinTable(name = "student_course_map",
-                joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
-                inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "user_id"))
-    private List<User> students;
+//    @ManyToMany
+//    @JoinTable(name = "student_course_map",
+//                joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
+//                inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "user_id"))
+//    private List<User> students;
 }

@@ -7,6 +7,7 @@ import com.themaestrocode.onlinelearningplatform.api.repository.EnrollmentReposi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +19,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public Enrollment enrollStudent(User student, Course course) {
-        boolean enrolled = checkIfAlreadyEnrolled(course.getCourseId(), student.getUserId());
+        boolean alreadyEnrolled = checkIfAlreadyEnrolled(course.getCourseId(), student.getUserId());
 
-        if(enrolled) throw new IllegalStateException("You have previously enrolled for this course");
+        if(alreadyEnrolled) throw new IllegalStateException("You have previously enrolled for this course");
 
         Enrollment enrollment = new Enrollment();
         enrollment.setStudent(student);
         enrollment.setCourse(course);
+        enrollment.setEnrollmentDate(LocalDateTime.now());
 
         return enrollmentRepository.save(enrollment);
     }
@@ -39,7 +41,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<Course> fetchAllEnrollmentsByStudent(Long studentId) {
+    public List<Course> fetchCoursesEnrolledForByStudent(Long studentId) {
         List<Enrollment> enrollments = enrollmentRepository.findByStudentUserId(studentId);
         List<Course> courses = new ArrayList<>();
 
@@ -48,6 +50,23 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return courses;
+    }
+
+    @Override
+    public Enrollment fetchEnrollmentByCourseIdAndStudentId(Long courseId, Long userId) {
+
+        Enrollment enrollment = enrollmentRepository.findByCourseCourseIdAndStudentUserId(courseId, userId);
+
+        if(enrollment == null) {
+            throw new NullPointerException("You are not currently enrolled for this course!");
+        }
+
+        return enrollment;
+    }
+
+    @Override
+    public void cancelEnrollment(Long enrollmentId) {
+        enrollmentRepository.deleteById(enrollmentId);
     }
 
     private boolean checkIfAlreadyEnrolled(Long courseId, Long stuentId) {

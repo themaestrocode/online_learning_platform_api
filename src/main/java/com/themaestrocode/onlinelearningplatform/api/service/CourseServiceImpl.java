@@ -1,7 +1,9 @@
 package com.themaestrocode.onlinelearningplatform.api.service;
 
+import com.themaestrocode.onlinelearningplatform.api.entity.Content;
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
+import com.themaestrocode.onlinelearningplatform.api.model.ContentModel;
 import com.themaestrocode.onlinelearningplatform.api.model.CourseModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.CourseRepository;
 import com.themaestrocode.onlinelearningplatform.api.utility.CourseType;
@@ -16,6 +18,8 @@ import java.util.NoSuchElementException;
 @Service
 public class CourseServiceImpl implements CourseService{
 
+    @Autowired
+    private ContentService contentService;
     @Autowired
     private CourseRepository courseRepository;
 
@@ -120,5 +124,27 @@ public class CourseServiceImpl implements CourseService{
         if(course == null) throw new NoSuchElementException("course does not exist!");
 
         return course;
+    }
+
+    @Override
+    public void updateEnrolledStudentDetails(Course course, boolean enrolled) {
+        if(enrolled) {
+            course.setCurrentlyEnrolled(course.getCurrentlyEnrolled() + 1);
+            course.setAllTimeEnrolled(course.getAllTimeEnrolled() + 1);
+        }
+        else {
+            course.setCurrentlyEnrolled(course.getCurrentlyEnrolled() - 1);
+        }
+
+        courseRepository.save(course);
+    }
+
+    @Override
+    public Content addCourseContent(ContentModel contentModel, Course course) {
+        Content content = contentService.saveContent(contentModel);
+
+        course.addContents().add(content);
+
+        return content;
     }
 }

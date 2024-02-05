@@ -1,7 +1,9 @@
 package com.themaestrocode.onlinelearningplatform.api.service;
 
+import com.themaestrocode.onlinelearningplatform.api.entity.Content;
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
+import com.themaestrocode.onlinelearningplatform.api.model.ContentModel;
 import com.themaestrocode.onlinelearningplatform.api.model.CourseModel;
 
 import java.util.List;
@@ -27,4 +29,8 @@ public interface CourseService {
     List<Course> fetchPaidCourses();
 
     Course fetchCourseById(Long courseId);
+
+    void updateEnrolledStudentDetails(Course course, boolean enrolled);
+
+    Content addCourseContent(ContentModel contentModel, Course course);
 }

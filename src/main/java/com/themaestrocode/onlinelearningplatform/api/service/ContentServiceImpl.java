@@ -12,12 +12,10 @@ import java.util.List;
 public class ContentServiceImpl implements ContentService {
 
     @Autowired
-    private CourseService courseService;
-    @Autowired
     private ContentRepository contentRepository;
 
     @Override
-    public Content addCourseContent(ContentModel contentModel) {
+    public Content saveContent(ContentModel contentModel) {
         Content content = new Content();
 
         content.setName(contentModel.getName());

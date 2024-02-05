@@ -58,6 +58,8 @@ public class StudentController {
         User student = detectStudent(request);
 
         Enrollment enrollment = enrollmentService.enrollStudent(student, course);
+        courseService.updateEnrolledStudentDetails(course, true);
+        //course.setCurrentlyEnrolled(course.getCurrentlyEnrolled() + 1); // increase the number of students who have enrolled for the course by 1.
 
         return ResponseEntity.created(URI.create("/api/v1/student/courses/" + enrollment.getCourse().getCourseId())).body(enrollment.getCourse());
     }
@@ -68,6 +70,7 @@ public class StudentController {
 
         Enrollment enrollment = enrollmentService.fetchEnrollmentByCourseIdAndStudentId(courseId, student.getUserId());
         enrollmentService.cancelEnrollment(enrollment.getEnrollmentId());
+        courseService.updateEnrolledStudentDetails(courseService.fetchCourseById(courseId), false);
 
         return ResponseEntity.ok("You have successfully de-enrolled for the course: " + enrollment.getCourse().getTitle());
     }

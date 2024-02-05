@@ -94,8 +94,7 @@ public class CreatorController {
         Course course = courseService.fetchCreatorCourse(courseId, creator.getUserId());
 
         ContentModel contentModel = new ContentModel(name, file.getBytes(), description, course);
-        Content content = contentService.addCourseContent(contentModel);
-
+        Content content = courseService.addCourseContent(contentModel, course);
         String uri = String.format("/api/v1/courses/%d/contents/%d", courseId, content.getContentId());
 
         return ResponseEntity.created(URI.create(uri)).body(content);
@@ -118,15 +117,6 @@ public class CreatorController {
 
         return ResponseEntity.ok("Content successfully deleted");
     }
-
-//    @GetMapping("/courses/{courseId}/enrolled-students")
-//    public List<User> fetchStudentsEnrolledForACourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
-//        User creator = detectCreator(request);
-//
-//        Course course = courseService.fetchCreatorCourse(courseId, creator.getUserId());
-//
-//        return
-//    }
 
     private User detectCreator(HttpServletRequest request) {
         String creatorEmail = request.getUserPrincipal().getName();

@@ -1,12 +1,15 @@
 package com.themaestrocode.onlinelearningplatform.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.themaestrocode.onlinelearningplatform.api.utility.CourseType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -27,16 +30,25 @@ public class Course {
     private String description;
     @Column(name = "course_url")
     private String courseUrl;
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", referencedColumnName = "user_id")
     private User creator;
     @Column(name = "course_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private CourseType courseType;
-//    @ManyToMany
-//    @JoinTable(name = "student_course_map",
-//                joinColumns = @JoinColumn(name = "course_id", referencedColumnName = "course_id"),
-//                inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "user_id"))
-//    private List<User> students;
+    @Column(name = "currently_enrolled")
+    private int currentlyEnrolled = 0;
+    @Column(name = "all_time_enrolled")
+    private int allTimeEnrolled = 0;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<Content> contents;
+
+    public List<Content> addContents() {
+        if (contents == null) {
+            contents = new ArrayList<>();
+        }
+        return contents;
+    }
+
 }

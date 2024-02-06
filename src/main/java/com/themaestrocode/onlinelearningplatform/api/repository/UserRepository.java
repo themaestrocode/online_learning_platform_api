@@ -12,7 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User findByEmail(String email);
 
-
     @Transactional
     @Modifying
     @Query(value = "UPDATE user_table SET enabled = true WHERE email_address = ?1", nativeQuery = true)

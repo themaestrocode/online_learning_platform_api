@@ -10,6 +10,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,11 +40,33 @@ public class User implements UserDetails {
     private String recoveryEmail;
     @Column(name = "phone_no", length = 30)
     private String phoneNo;
-    @Column(name = "user_role", length = 10, nullable = false)
+    @Column(name = "date_joined")
+    private LocalDateTime dateJoined;
+    @Column(name = "user_role", nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
     private boolean enabled = false;
     private boolean locked = false;
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Course> courses;
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Enrollment> enrollments;
+
+    public List<Course> addCourse() {
+        if(courses == null) {
+            courses = new ArrayList<>();
+        }
+
+        return courses;
+    }
+
+    public List<Enrollment> addEnrollment() {
+        if(enrollments == null) {
+            enrollments = new ArrayList<>();
+        }
+
+        return enrollments;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

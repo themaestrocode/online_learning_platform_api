@@ -30,4 +30,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findByCourseType(CourseType courseType);
 
+    List<Course> findByCreatorUserIdAndTitleContaining(Long creatorId, String text);
 }

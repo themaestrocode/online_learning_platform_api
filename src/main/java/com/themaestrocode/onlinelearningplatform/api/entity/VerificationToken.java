@@ -25,8 +25,6 @@ public class VerificationToken {
     private LocalDateTime creationTime;
     @Column(name = "expiry_time", nullable = false)
     private LocalDateTime expiryTime;
-    @Column(name = "confirmation_time")
-    private LocalDateTime confirmationTime;
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

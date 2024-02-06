@@ -1,6 +1,6 @@
 package com.themaestrocode.onlinelearningplatform.api.controller;
 
-import com.themaestrocode.onlinelearningplatform.api.model.UserLoginModel;
+import com.themaestrocode.onlinelearningplatform.api.model.UserAuthModel;
 import com.themaestrocode.onlinelearningplatform.api.security.JwtService;
 import com.themaestrocode.onlinelearningplatform.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/public/login")
-public class LoginController {
+@RequestMapping("/api/v1/public")
+public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -21,10 +21,10 @@ public class LoginController {
     private JwtService jwtService;
 
 
-    @PostMapping
-    public String login(@RequestBody UserLoginModel userLoginModel) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginModel.getEmail(), userLoginModel.getPassword()));
-        UserDetails user = userService.findByEmail(userLoginModel.getEmail());
+    @PostMapping("/login")
+    public String login(@RequestBody UserAuthModel userAuthModel) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userAuthModel.getEmail(), userAuthModel.getPassword()));
+        UserDetails user = userService.findByEmail(userAuthModel.getEmail());
 
         if(user != null) {
             return jwtService.generateToken(user);

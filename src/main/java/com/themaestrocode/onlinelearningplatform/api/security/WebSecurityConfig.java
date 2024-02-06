@@ -28,6 +28,7 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/api/v1/public/**").permitAll()
+                        .requestMatchers("/api/v1/user/**").hasAnyAuthority(ROLE_CREATOR.name(), ROLE_STUDENT.name())
                         .requestMatchers("/api/v1/student/**").hasAuthority(ROLE_STUDENT.name())
                         .requestMatchers("/api/v1/creator/**").hasAuthority(ROLE_CREATOR.name())
                         .anyRequest().authenticated()

@@ -2,7 +2,11 @@ package com.themaestrocode.onlinelearningplatform.api.service;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Content;
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
+import com.themaestrocode.onlinelearningplatform.api.entity.Enrollment;
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
+import com.themaestrocode.onlinelearningplatform.api.error.EntityNotFoundException;
+import com.themaestrocode.onlinelearningplatform.api.error.StudentAlreadyEnrolledException;
+import com.themaestrocode.onlinelearningplatform.api.error.StudentNotEnrolledException;
 import com.themaestrocode.onlinelearningplatform.api.model.ContentModel;
 import com.themaestrocode.onlinelearningplatform.api.model.CourseModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.CourseRepository;
@@ -13,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService{
@@ -21,7 +25,10 @@ public class CourseServiceImpl implements CourseService{
     @Autowired
     private ContentService contentService;
     @Autowired
+    private EnrollmentService enrollmentService;
+    @Autowired
     private CourseRepository courseRepository;
+
 
     @Override
     public Course createCourse(CourseModel courseModel, User creator) {
@@ -29,11 +36,13 @@ public class CourseServiceImpl implements CourseService{
 
         course.setTitle(courseModel.getTitle());
         course.setDescription(courseModel.getDescription());
-        course.setCourseUrl(courseModel.getCourseUrl());
         course.setCourseType(courseModel.getCourseType());
         course.setCreator(creator);
 
-        return courseRepository.save(course);
+        courseRepository.save(course);
+        creator.addCourse().add(course);
+
+        return course;
     }
 
     @Override
@@ -43,45 +52,36 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
-    public List<Course> fetchCreatorCourseByTitle(String courseName, Long creatorId) {
-        //List<Course> creatorCourses = courseRepository.fetchAllCreatorCourses(creatorId);
-        List<Course> creatorCourses = courseRepository.findByCreatorUserId(creatorId);
-        List<Course> coursesContainingCourseName = new ArrayList<>();
+    public List<Course> fetchCreatorCourseByTitle(String text, Long creatorId) {
+        List<Course> coursesContainingText = courseRepository.findByCreatorUserIdAndTitleContaining(creatorId, text);
 
-        for(Course course: creatorCourses) {
-            if(course.getTitle().toLowerCase().contains(courseName.toLowerCase())) {
-                coursesContainingCourseName.add(course);
-            }
-        }
-
-        return coursesContainingCourseName;
+        return coursesContainingText;
     }
 
     @Override
-    public Course fetchCreatorCourse(Long courseId, Long creatorId) {
+    public Course fetchCreatorCourseById(Long courseId, Long creatorId) throws EntityNotFoundException {
         Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
 
-        if(course == null) throw new NullPointerException("you do not have a course with the provided course id.");
+        if(course == null) throw new EntityNotFoundException("course not found!");
 
         return course;
-        //return courseRepository.fetchCreatorCourseById(courseId, creatorId);
     }
 
     @Override
     @Transactional
-    public void deleteCreatorCourseById(Long courseId, Long creatorId) {
+    public void deleteCreatorCourseById(Long courseId, Long creatorId) throws EntityNotFoundException {
+        Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
 
-        if(courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId) == null) {
-            throw new NullPointerException("course does not exist!");
-        }
+        if(course == null) throw new EntityNotFoundException("course not found!");
+
         courseRepository.deleteByCourseIdAndCreatorUserId(courseId, creatorId);
-        //courseRepository.deleteCreatorCourseById(courseId, creatorId);
     }
 
     @Override
-    public Course updateCreatorCourse(Long courseId, CourseModel courseModel, Long creatorId) {
+    public Course updateCreatorCourse(Long courseId, CourseModel courseModel, Long creatorId) throws EntityNotFoundException {
         Course course = courseRepository.findByCourseIdAndCreatorUserId(courseId, creatorId);
-        //Course course = courseRepository.fetchCreatorCourseById(courseId, creatorId);
+
+        if(course == null) throw new EntityNotFoundException("course not found!");
 
         if(courseModel.getTitle() != null && !courseModel.getTitle().isEmpty()) {
             course.setTitle(courseModel.getTitle());
@@ -93,10 +93,6 @@ public class CourseServiceImpl implements CourseService{
 
         if(courseModel.getCourseType() != null && !courseModel.getCourseType().toString().isEmpty()) {
             course.setCourseType(courseModel.getCourseType());
-        }
-
-        if(courseModel.getCourseUrl() != null && !courseModel.getCourseUrl().isEmpty()) {
-            course.setCourseUrl(courseModel.getCourseUrl());
         }
 
         return courseRepository.save(course);
@@ -118,16 +114,66 @@ public class CourseServiceImpl implements CourseService{
     }
 
     @Override
-    public Course fetchCourseById(Long courseId) {
+    public Course fetchCourseById(Long courseId) throws EntityNotFoundException {
         Course course = courseRepository.findById(courseId).get();
 
-        if(course == null) throw new NoSuchElementException("course does not exist!");
+        if(course == null) throw new EntityNotFoundException("course not found!");
 
         return course;
     }
 
     @Override
-    public void updateEnrolledStudentDetails(Course course, boolean enrolled) {
+    public void enroll(User student, Course course) throws StudentAlreadyEnrolledException {
+        Enrollment enrollment = enrollmentService.enrollStudent(student, course);
+        student.addEnrollment().add(enrollment);
+        updateCourseEnrollmentDetails(course, true);
+    }
+
+    @Override
+    public Content addCourseContent(ContentModel contentModel, Course course) {
+        Content content = contentService.saveContent(contentModel);
+        course.addContents().add(content);
+
+        return content;
+    }
+
+    @Override
+    public List<Course> fetchEnrolledCourseByTitle(Long userId, String text) {
+        List<Enrollment> enrollments = enrollmentService.fetchEnrollmentsByStudentId(userId);
+        List<Course> enrolledCourses = new ArrayList<>();
+
+        for(Enrollment enrollment: enrollments) {
+            if(enrollment.getCourse().getTitle().toLowerCase().contains(text.toLowerCase())) {
+                enrolledCourses.add(enrollment.getCourse());
+            }
+        }
+
+        return enrolledCourses;
+    }
+
+    @Override
+    public Course fetchEnrolledCourseById(Long courseId, Long userId) throws StudentNotEnrolledException {
+        Enrollment enrollment = enrollmentService.fetchEnrollmentByCourseIdAndStudentId(courseId, userId);
+
+        return enrollment.getCourse();
+    }
+
+    @Override
+    public List<Course> fetchEnrolledCourseList(Long userId) {
+        List<Enrollment> enrollments = enrollmentService.fetchEnrollmentsByStudentId(userId);
+
+        return enrollments.stream().map(Enrollment::getCourse).collect(Collectors.toList());
+    }
+
+    @Override
+    public void cancelCourseEnrollment(Long courseId, Long userId) throws StudentNotEnrolledException {
+        Enrollment enrollment = enrollmentService.fetchEnrollmentByCourseIdAndStudentId(courseId, userId);
+
+        enrollmentService.cancelEnrollment(enrollment.getEnrollmentId());
+        updateCourseEnrollmentDetails(courseRepository.findById(courseId).get(), false);
+    }
+
+    private void updateCourseEnrollmentDetails(Course course, boolean enrolled) {
         if(enrolled) {
             course.setCurrentlyEnrolled(course.getCurrentlyEnrolled() + 1);
             course.setAllTimeEnrolled(course.getAllTimeEnrolled() + 1);
@@ -139,12 +185,4 @@ public class CourseServiceImpl implements CourseService{
         courseRepository.save(course);
     }
 
-    @Override
-    public Content addCourseContent(ContentModel contentModel, Course course) {
-        Content content = contentService.saveContent(contentModel);
-
-        course.addContents().add(content);
-
-        return content;
-    }
 }

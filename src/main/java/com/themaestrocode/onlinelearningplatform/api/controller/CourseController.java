@@ -1,6 +1,7 @@
 package com.themaestrocode.onlinelearningplatform.api.controller;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
+import com.themaestrocode.onlinelearningplatform.api.error.EntityNotFoundException;
 import com.themaestrocode.onlinelearningplatform.api.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class CourseController {
     }
 
     @GetMapping("/{courseId}")
-    public Course fetchCourseById(@PathVariable("courseId") Long courseId) {
+    public Course fetchCourseById(@PathVariable("courseId") Long courseId) throws EntityNotFoundException {
         return courseService.fetchCourseById(courseId);
     }
 }

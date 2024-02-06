@@ -12,7 +12,6 @@ public class UserModel {
     private String firstName;
     private String lastName;
     private String userEmail;
-    private String phoneNo;
     private String userPassword;
     private String matchingPassword;
 }

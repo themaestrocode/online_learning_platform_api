@@ -18,7 +18,7 @@ public class Content {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "content_sequence")
     @Column(name = "content_id")
     private Long contentId;
-    @Column(name = "name")
+    @Column(name = "name", length = 50)
     private String name;
     @Lob
     @Column(name = "file_data", columnDefinition = "MEDIUMBLOB")

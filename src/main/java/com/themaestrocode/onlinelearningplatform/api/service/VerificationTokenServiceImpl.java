@@ -2,6 +2,7 @@ package com.themaestrocode.onlinelearningplatform.api.service;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
 import com.themaestrocode.onlinelearningplatform.api.entity.VerificationToken;
+import com.themaestrocode.onlinelearningplatform.api.error.EntityNotFoundException;
 import com.themaestrocode.onlinelearningplatform.api.repository.VerificationTokenRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,28 +18,16 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Override
     public VerificationToken saveVerificationToken(VerificationToken verificationToken) {
-        verificationTokenRepo.save(verificationToken);
+        return verificationTokenRepo.save(verificationToken);
+    }
+
+    @Override
+    public VerificationToken findByToken(String token) throws EntityNotFoundException {
+        VerificationToken verificationToken = verificationTokenRepo.findByToken(token);
+
+        if(verificationToken == null) throw new EntityNotFoundException("Token not found!");
+
         return verificationToken;
-    }
-
-    @Override
-    public VerificationToken validateVerificationToken(String token) {
-        return null;
-    }
-
-    @Override
-    public void updateVerificationTokenConfirmationTime(String token, LocalDateTime now) {
-        verificationTokenRepo.updateVerificationTokenConfirmationTime(token, now);
-    }
-
-    @Override
-    public VerificationToken findByToken(String token) {
-        return verificationTokenRepo.findByToken(token);
-    }
-
-    @Override
-    public void deleteVerificationToken(VerificationToken verificationToken) {
-        verificationTokenRepo.delete(verificationToken);
     }
 
     @Override
@@ -51,6 +40,13 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
         verificationToken.setExpiryTime(LocalDateTime.now().plusHours(12));
         verificationToken.setUser(user);
 
+        verificationTokenRepo.save(verificationToken);
+
         return verificationToken;
+    }
+
+    @Override
+    public void deleteVerificationTokenById(Long tokenId) {
+        verificationTokenRepo.deleteById(tokenId);
     }
 }

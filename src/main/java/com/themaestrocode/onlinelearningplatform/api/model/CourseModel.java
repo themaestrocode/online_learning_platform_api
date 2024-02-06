@@ -12,6 +12,5 @@ public class CourseModel {
 
     private String title;
     private String description;
-    private String courseUrl;
     private CourseType courseType;
 }

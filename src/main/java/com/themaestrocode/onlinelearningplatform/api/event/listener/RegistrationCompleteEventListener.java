@@ -21,7 +21,6 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
     public void onApplicationEvent(RegistrationCompleteEvent event) {
         User user = event.getUser();
         VerificationToken verificationToken = verificationTokenService.generateVerificationToken(user);
-        verificationTokenService.saveVerificationToken(verificationToken);
 
         //build the link/url for email verification
         String verificationLink = event.getApplicationUrl() + "/registration/verify-registration?token=" + verificationToken.getToken();
@@ -34,7 +33,7 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
 //        } catch (MessagingException e) {
 //            throw new RuntimeException("failed to send email!");
 
-        System.out.println(String.format("\n\nYour verification link: %s\n\n", verificationLink));
+        System.out.println(String.format("\n\n%s\n\n", message));
     }
 
 }

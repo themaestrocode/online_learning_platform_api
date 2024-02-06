@@ -1,11 +1,14 @@
 package com.themaestrocode.onlinelearningplatform.api.service;
 
-
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
 import com.themaestrocode.onlinelearningplatform.api.entity.VerificationToken;
+import com.themaestrocode.onlinelearningplatform.api.error.EntityNotFoundException;
+import com.themaestrocode.onlinelearningplatform.api.error.InvalidEmailException;
+import com.themaestrocode.onlinelearningplatform.api.error.InvalidPasswordException;
 import com.themaestrocode.onlinelearningplatform.api.model.UserModel;
 import com.themaestrocode.onlinelearningplatform.api.repository.UserRepository;
 import com.themaestrocode.onlinelearningplatform.api.utility.UserRole;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,50 +47,32 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User registerStudent(UserModel userModel) {
-        //validating email
-        boolean isValidEmail = validateEmail(userModel.getUserEmail());
-        if(!isValidEmail) throw new IllegalStateException(String.format("The provided email '%s' is not valid.", userModel.getUserEmail()));
-
-        boolean emailExists = checkIfEmailExists(userModel.getUserEmail());
-        if(emailExists) throw new IllegalStateException(String.format("The provided email '%s' is registered with another account", userModel.getUserEmail()));
-
-        //validating password
-        int isValidPassword = validatePassword(userModel.getUserPassword(), userModel.getMatchingPassword());
-        if(isValidPassword < 0) throw new IllegalStateException("password too short! Password must not be less than 8 characters.");
-        else if(isValidPassword == 0) throw new IllegalStateException(String.format("passwords do not match!"));
+    public User registerStudent(UserModel userModel) throws InvalidEmailException, InvalidPasswordException {
+        validateEmail(userModel.getUserEmail()); //validating email
+        validatePassword(userModel.getUserPassword(), userModel.getMatchingPassword()); //validating password
 
         User student = new User();
         student.setFirstName(userModel.getFirstName());
         student.setLastName(userModel.getLastName());
         student.setEmail(userModel.getUserEmail());
         student.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
-        student.setPhoneNo(userModel.getPhoneNo());
+        student.setDateJoined(LocalDateTime.now());
         student.setUserRole(UserRole.ROLE_STUDENT);
 
         return userRepository.save(student);
     }
 
     @Override
-    public User registerCreator(UserModel userModel) {
-        //validating email
-        boolean isValidEmail = validateEmail(userModel.getUserEmail());
-        if(!isValidEmail) throw new IllegalStateException(String.format("The provided email '%s' is not valid.", userModel.getUserEmail()));
-
-        boolean emailExists = checkIfEmailExists(userModel.getUserEmail());
-        if(emailExists) throw new IllegalStateException(String.format("The provided email '%s' is registered with another account", userModel.getUserEmail()));
-
-        //validating password
-        int isValidPassword = validatePassword(userModel.getUserPassword(), userModel.getMatchingPassword());
-        if(isValidPassword < 0) throw new IllegalStateException("password too short! Password must not be less than 8 characters.");
-        else if(isValidPassword == 0) throw new IllegalStateException(String.format("passwords do not match!"));
+    public User registerCreator(UserModel userModel) throws InvalidEmailException, InvalidPasswordException {
+        validateEmail(userModel.getUserEmail());
+        validatePassword(userModel.getUserPassword(), userModel.getMatchingPassword());
 
         User creator = new User();
         creator.setFirstName(userModel.getFirstName());
         creator.setLastName(userModel.getLastName());
         creator.setEmail(userModel.getUserEmail());
         creator.setPassword(passwordEncoder.encode(userModel.getUserPassword()));
-        creator.setPhoneNo(userModel.getPhoneNo());
+        creator.setDateJoined(LocalDateTime.now());
         creator.setUserRole(UserRole.ROLE_CREATOR);
 
         return userRepository.save(creator);
@@ -99,56 +84,66 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
-    public String confirmRegistration(String token) {
+    public String confirmRegistration(String token) throws EntityNotFoundException {
         VerificationToken verificationToken = verificationTokenService.findByToken(token);
 
-        if(verificationToken == null) {
-            throw new IllegalStateException("Token not found!");
-        } else if(verificationToken.getConfirmationTime() != null) {
-            return "You have already confirmed your registration.";
-        } else if(verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            return "Verification token expired! Please, register again and be sure to verify your account within 30 minutes.";
+        if(verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
+            return "Verification token expired! Generate a new token and be sure to verify your account within 12 hours.";
         }
 
-        verificationTokenService.updateVerificationTokenConfirmationTime(token, LocalDateTime.now());
         userRepository.enableUser(verificationToken.getUser().getEmail());
+        verificationTokenService.deleteVerificationTokenById(verificationToken.getTokenId());
 
         return "You have successfully verified your account";
     }
 
     @Override
-    public VerificationToken generateNewVerificationToken(String oldToken) {
+    public VerificationToken generateNewVerificationToken(String oldToken) throws EntityNotFoundException {
         VerificationToken verificationToken = verificationTokenService.findByToken(oldToken);
 
         verificationToken.setToken(UUID.randomUUID().toString());
         verificationToken.setCreationTime(LocalDateTime.now());
         verificationToken.setExpiryTime(LocalDateTime.now().plusHours(12));
+
         verificationTokenService.saveVerificationToken(verificationToken);
 
         return verificationToken;
     }
 
-    private boolean validateEmail(String email) {
-        if (email == null) return false;
+    @Override
+    public User detectUser(HttpServletRequest request) {
+        String userEmail = request.getUserPrincipal().getName();
 
-        Matcher matcher = EMAIL_PATTERN.matcher(email);
-        return matcher.matches();
+        User user = userRepository.findByEmail(userEmail);
+
+        if(user == null) throw new UsernameNotFoundException("User could not be determined!");
+
+        return user;
     }
 
-    private boolean checkIfEmailExists(String email) {
-        User user = findByEmail(email);
+    @Override
+    public void deleteUserAccountById(Long userId) {
+        userRepository.deleteById(userId);
+    }
 
-        if(user == null) return false;
+    private boolean validateEmail(String email) throws InvalidEmailException {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+
+        if (email == null || !matcher.matches()) {
+            throw new InvalidEmailException("Invalid email!");
+        }
+        else if(userRepository.findByEmail(email) != null) {
+            throw new InvalidEmailException("Email already registered with another account!");
+        }
 
         return true;
     }
 
-    private int validatePassword(String password, String matchingPassword) {
-        if(password.length() < 8) return -1;
-        else if(!password.equals(matchingPassword)) return 0;
+    private boolean validatePassword(String password, String matchingPassword) throws InvalidPasswordException {
+        if(password.length() < 8) throw new InvalidPasswordException("Password too short! At least 8 characters long.");
+        else if(!password.equals(matchingPassword)) throw new InvalidPasswordException("Passwords do not match!");
 
-        return 1;
+        return true;
     }
 
 }

@@ -24,12 +24,10 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "course_sequence")
     @Column(name = "course_id")
     private Long courseId;
-    @Column(name = "title", unique = true, nullable = false)
+    @Column(name = "title", unique = true, length = 100, nullable = false)
     private String title;
     @Column(name = "description")
     private String description;
-    @Column(name = "course_url")
-    private String courseUrl;
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", referencedColumnName = "user_id")

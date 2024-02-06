@@ -1,11 +1,11 @@
 package com.themaestrocode.onlinelearningplatform.api.controller;
 
 import com.themaestrocode.onlinelearningplatform.api.entity.Course;
-import com.themaestrocode.onlinelearningplatform.api.entity.Enrollment;
 import com.themaestrocode.onlinelearningplatform.api.entity.User;
-import com.themaestrocode.onlinelearningplatform.api.service.ContentService;
+import com.themaestrocode.onlinelearningplatform.api.error.EntityNotFoundException;
+import com.themaestrocode.onlinelearningplatform.api.error.StudentAlreadyEnrolledException;
+import com.themaestrocode.onlinelearningplatform.api.error.StudentNotEnrolledException;
 import com.themaestrocode.onlinelearningplatform.api.service.CourseService;
-import com.themaestrocode.onlinelearningplatform.api.service.EnrollmentService;
 import com.themaestrocode.onlinelearningplatform.api.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +23,11 @@ public class StudentController {
     private UserService userService;
     @Autowired
     private CourseService courseService;
-    @Autowired
-    private ContentService contentService;
-    @Autowired
-    private EnrollmentService enrollmentService;
 
 
     @GetMapping
     public ResponseEntity<String> viewProfile(HttpServletRequest request) {
-        User student = detectStudent(request);
+        User student = userService.detectUser(request);
 
         return ResponseEntity.ok(String.format("Welcome to your profile, %s %s", student.getFirstName(), student.getLastName()));
     }
@@ -52,50 +48,50 @@ public class StudentController {
 //    }
 
     @PostMapping("/enroll")
-    public ResponseEntity<Course> enroll(@RequestParam Long courseId, HttpServletRequest request) {
+    public ResponseEntity<Course> enroll(@RequestParam Long courseId, HttpServletRequest request) throws EntityNotFoundException, StudentAlreadyEnrolledException {
         Course course = courseService.fetchCourseById(courseId);
 
-        User student = detectStudent(request);
+        User student = userService.detectUser(request);
 
-        Enrollment enrollment = enrollmentService.enrollStudent(student, course);
-        courseService.updateEnrolledStudentDetails(course, true);
-        //course.setCurrentlyEnrolled(course.getCurrentlyEnrolled() + 1); // increase the number of students who have enrolled for the course by 1.
+        courseService.enroll(student, course);
 
-        return ResponseEntity.created(URI.create("/api/v1/student/courses/" + enrollment.getCourse().getCourseId())).body(enrollment.getCourse());
+        return ResponseEntity.created(URI.create("/api/v1/student/courses/" + course.getCourseId())).body(course);
     }
 
     @DeleteMapping("/courses/{courseId}")
-    public ResponseEntity<String> cancelEnrollment(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
-        User student = detectStudent(request);
+    public ResponseEntity<String> cancelEnrollment(@PathVariable("courseId") Long courseId, HttpServletRequest request) throws StudentNotEnrolledException {
+        User student = userService.detectUser(request);
 
-        Enrollment enrollment = enrollmentService.fetchEnrollmentByCourseIdAndStudentId(courseId, student.getUserId());
-        enrollmentService.cancelEnrollment(enrollment.getEnrollmentId());
-        courseService.updateEnrolledStudentDetails(courseService.fetchCourseById(courseId), false);
+        courseService.cancelCourseEnrollment(courseId, student.getUserId());
 
-        return ResponseEntity.ok("You have successfully de-enrolled for the course: " + enrollment.getCourse().getTitle());
+        return ResponseEntity.ok("You have successfully de-enrolled");
     }
 
     @GetMapping("/courses")
     public ResponseEntity<List<Course>> fetchCoursesEnrolledForByStudent(HttpServletRequest request) {
-        User student = detectStudent(request);
+        User student = userService.detectUser(request);
 
-        return ResponseEntity.ok(enrollmentService.fetchCoursesEnrolledForByStudent(student.getUserId()));
+        List<Course> enrolledCourses = courseService.fetchEnrolledCourseList(student.getUserId());
+
+        return ResponseEntity.ok(enrolledCourses);
     }
 
     @GetMapping("/courses/{courseId}")
-    public ResponseEntity<Course> fetchEnrolledCourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
-        User student = detectStudent(request);
+    public ResponseEntity<Course> fetchEnrolledCourseById(@PathVariable("courseId") Long courseId, HttpServletRequest request) throws StudentNotEnrolledException {
+        User student = userService.detectUser(request);
 
-        return ResponseEntity.ok(enrollmentService.fetchEnrolledCourse(courseId, student.getUserId()));
+        Course course = courseService.fetchEnrolledCourseById(courseId, student.getUserId());
+
+        return ResponseEntity.ok(course);
     }
 
-    private User detectStudent(HttpServletRequest request) {
-        String studentEmail = request.getUserPrincipal().getName();
+    @GetMapping("/courses/course-title/{text}")
+    public ResponseEntity<List<Course>> fetchEnrolledCourseByTitle(@PathVariable("text") String text, HttpServletRequest request) {
+        User student = userService.detectUser(request);
 
-        User student = userService.findByEmail(studentEmail);
+        List<Course> enrolledCoursesMatchingText = courseService.fetchEnrolledCourseByTitle(student.getUserId(), text);
 
-        if(student == null) throw new RuntimeException("Student could not be determined");
-
-        return student;
+        return ResponseEntity.ok(enrolledCoursesMatchingText);
     }
+
 }
